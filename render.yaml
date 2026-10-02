@@ -15,11 +15,9 @@ services:
         value: imap.gmail.com
       - key: GMAIL_IMAP_PORT
         value: "993"
-      - key: WHATSAPP_BRIDGE_URL
-        value: http://127.0.0.1:3000
       - key: WHATSAPP_TARGET_GROUP
         sync: false
       - key: DATABASE_URL
         sync: false
       - key: CHECK_INTERVAL_SECONDS
-        value: "300"
+        value: "60"

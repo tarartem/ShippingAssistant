@@ -9,7 +9,7 @@ GMAIL_IMAP_SERVER = os.getenv("GMAIL_IMAP_SERVER", "imap.gmail.com")
 GMAIL_IMAP_PORT = int(os.getenv("GMAIL_IMAP_PORT", "993"))
 
 PORT = os.getenv("PORT", "3000")
-WHATSAPP_BRIDGE_URL = os.getenv("WHATSAPP_BRIDGE_URL", f"http://127.0.0.1:{PORT}")
+WHATSAPP_BRIDGE_URL = f"http://127.0.0.1:{PORT}"
 WHATSAPP_TARGET_GROUP = os.getenv("WHATSAPP_TARGET_GROUP", "")
 
 CHECK_INTERVAL_SECONDS = int(os.getenv("CHECK_INTERVAL_SECONDS", "300"))

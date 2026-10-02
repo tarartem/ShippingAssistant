@@ -15,6 +15,7 @@ WORKDIR /app
 # Set up Python virtual environment
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
 
 # Install Python dependencies
 COPY requirements.txt .
