@@ -270,6 +270,6 @@ app.post('/set-description', async (req, res) => {
 
 startWhatsApp();
 
-app.listen(PORT, () => {
-  console.log(`🚀 WhatsApp Bridge running on http://127.0.0.1:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 WhatsApp Bridge running on http://0.0.0.0:${PORT}`);
 });

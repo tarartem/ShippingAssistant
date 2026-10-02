@@ -5,21 +5,20 @@ echo "=========================================================="
 echo "🚀 Starting ShippingAssistant 24/7 Cloud Container"
 echo "=========================================================="
 
-# Ensure data directory exists for persistence
 mkdir -p /app/data/auth_info
 
-# Link persistent auth_info if not already linked
-if [ ! -L /app/whatsapp_bridge/auth_info ]; then
-  # If local auth_info already has credentials, copy them to persistent data
-  if [ -d /app/whatsapp_bridge/auth_info ] && [ "$(ls -A /app/whatsapp_bridge/auth_info 2>/dev/null)" ]; then
-    cp -rn /app/whatsapp_bridge/auth_info/* /app/data/auth_info/ 2>/dev/null || true
-    rm -rf /app/whatsapp_bridge/auth_info
+if [ -z "$DATABASE_URL" ]; then
+  if [ ! -L /app/whatsapp_bridge/auth_info ]; then
+    if [ -d /app/whatsapp_bridge/auth_info ]; then
+      cp -r /app/whatsapp_bridge/auth_info/. /app/data/auth_info/ 2>/dev/null || true
+      rm -rf /app/whatsapp_bridge/auth_info
+    fi
+    ln -s /app/data/auth_info /app/whatsapp_bridge/auth_info
   fi
-  ln -s /app/data/auth_info /app/whatsapp_bridge/auth_info
 fi
 
 # 1. Start WhatsApp Bridge in the background
-echo "📡 Launching WhatsApp Bridge..."
+echo "📡 Launching WhatsApp Bridge on port ${PORT:-3000}..."
 cd /app/whatsapp_bridge
 node server.js &
 BRIDGE_PID=$!

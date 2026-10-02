@@ -1,0 +1,11 @@
+node_modules
+whatsapp_bridge/node_modules
+whatsapp_bridge/auth_info
+whatsapp_bridge/qr.png
+.git
+.env
+processed_emails.db
+*.log
+__pycache__
+*.pyc
+.DS_Store
