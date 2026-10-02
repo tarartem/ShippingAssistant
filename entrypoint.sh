@@ -30,7 +30,7 @@ sleep 5
 
 # 2. Start Python Shipping Monitor in background
 echo "📬 Launching Python Shipping Monitor..."
-python3 main.py --mode daemon --interval 300 &
+python3 main.py --mode daemon --interval 60 --notifier whatsapp &
 MONITOR_PID=$!
 
 # Trap signals for graceful shutdown

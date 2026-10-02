@@ -17,8 +17,9 @@ class InPostExtractor:
             return False
 
         # Must be arrival notice
-        is_arrival = "ya puedes recoger" in lower_sub or "ha llegado al punto pack" in lower_text or "ha llegado a tu locker" in lower_text
-        return ("inpost" in lower_sender or "inpost" in lower_sub) and is_arrival
+        is_arrival = "ya puedes recoger" in lower_sub or "ha llegado al punto pack" in lower_text or "ha llegado a tu locker" in lower_text or "ha llegado" in lower_text
+        has_inpost = "inpost" in lower_sender or "inpost" in lower_sub or "inpost" in lower_text or "punto pack" in lower_text
+        return has_inpost and is_arrival
 
     @classmethod
     def extract(cls, subject: str, sender: str, html: str, text: str) -> Optional[ShipmentInfo]:

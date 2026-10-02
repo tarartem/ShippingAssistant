@@ -1,6 +1,7 @@
 import requests
 import os
 import tempfile
+import time
 from typing import Optional
 from .base import BaseNotifier
 from extractors.base import ShipmentInfo
@@ -55,20 +56,22 @@ class WhatsAppBridgeNotifier(BaseNotifier):
                 print(f"Warning: Failed to pre-download QR image, using URL fallback: {e}")
                 payload["imageUrl"] = info.qr_code_url
 
-        try:
-            res = requests.post(f"{self.bridge_url}/send", json=payload, timeout=20)
-            if res.status_code == 200 and res.json().get("success"):
-                print(f"✅ Notification sent to WhatsApp target ({self.target_jid})")
-                return True
-            else:
-                print(f"❌ Failed to send via WhatsApp Bridge: {res.text}")
-                return False
-        except Exception as e:
-            print(f"❌ Error communicating with WhatsApp Bridge: {e}")
-            return False
-        finally:
-            if temp_img_file and os.path.exists(temp_img_file):
-                try:
-                    os.remove(temp_img_file)
-                except Exception:
-                    pass
+        for attempt in range(1, 4):
+            try:
+                res = requests.post(f"{self.bridge_url}/send", json=payload, timeout=20)
+                if res.status_code == 200 and res.json().get("success"):
+                    print(f"✅ Notification sent to WhatsApp target ({self.target_jid})")
+                    return True
+                else:
+                    print(f"⚠️ Attempt {attempt}: Bridge returned {res.status_code} - {res.text}. Retrying in 3s...")
+                    time.sleep(3)
+            except Exception as e:
+                print(f"⚠️ Attempt {attempt}: Error connecting to bridge: {e}. Retrying in 3s...")
+                time.sleep(3)
+            finally:
+                if temp_img_file and os.path.exists(temp_img_file):
+                    try:
+                        os.remove(temp_img_file)
+                    except Exception:
+                        pass
+        return False

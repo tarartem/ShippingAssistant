@@ -42,15 +42,10 @@ def get_notifier(notifier_choice: str):
         target_jid=config.WHATSAPP_TARGET_GROUP
     )
 
-    if notifier_choice == "whatsapp":
-        return wa_notifier
-
-    # Auto mode
-    if config.WHATSAPP_TARGET_GROUP and wa_notifier.is_bridge_ready():
-        print(f"📡 WhatsApp Bridge connected. Routing notifications to {config.WHATSAPP_TARGET_GROUP}")
+    if config.WHATSAPP_TARGET_GROUP:
         return wa_notifier
     else:
-        print("ℹ️ WhatsApp Bridge not ready or target group not set. Defaulting to Console output.")
+        print("ℹ️ WhatsApp target group not set. Defaulting to Console output.")
         return ConsoleNotifier()
 
 def main():

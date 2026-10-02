@@ -21,8 +21,9 @@ class VintedGoExtractor:
             return False
 
         # Must be an arrival / ready for pickup email
-        is_arrival = "liberar espacio" in lower_sub or "recoge tu paquete" in lower_sub or "ha llegado" in lower_text
-        return ("vinted" in lower_sender or "vinted" in lower_sub) and is_arrival
+        is_arrival = "liberar espacio" in lower_sub or "recoge tu paquete" in lower_sub or "ha llegado" in lower_text or "ready for pickup" in lower_text
+        has_vinted = "vinted" in lower_sender or "vinted" in lower_sub or "vinted" in lower_text
+        return has_vinted and is_arrival
 
     @classmethod
     def extract(cls, subject: str, sender: str, html: str, text: str) -> Optional[ShipmentInfo]:
