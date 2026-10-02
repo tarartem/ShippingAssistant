@@ -23,9 +23,9 @@ class GmailShippingMonitor:
         mail.login(config.GMAIL_USER, config.GMAIL_APP_PASSWORD)
         return mail
 
-    def check_inbox(self, search_unseen_only: bool = True, max_scan: int = 20) -> int:
+    def check_inbox(self, max_scan: int = 25) -> int:
         """
-        Scans inbox for new shipping emails, extracts pickup details,
+        Scans inbox for recent shipping emails, extracts pickup details,
         and sends notifications.
         Returns the count of new shipments processed.
         """
@@ -35,14 +35,9 @@ class GmailShippingMonitor:
             mail = self.connect()
             mail.select("INBOX")
 
-            if search_unseen_only:
-                status, data = mail.search(None, "UNSEEN")
-                msg_ids = data[0].split()
-            else:
-                # Search for emails matching shipping keywords
-                # e.g. (OR SUBJECT "recoge" (OR SUBJECT "recoger" SUBJECT "entregado"))
-                status, data = mail.search(None, '(OR SUBJECT "recoge" (OR SUBJECT "recoger" SUBJECT "entregado"))')
-                msg_ids = data[0].split()
+            # Search ALL emails in the inbox to never miss emails read on mobile/desktop
+            status, data = mail.search(None, "ALL")
+            msg_ids = data[0].split()
 
             if not msg_ids:
                 if config.DEBUG:
@@ -51,12 +46,13 @@ class GmailShippingMonitor:
 
             # Scan the most recent emails up to max_scan
             recent_ids = msg_ids[-max_scan:]
-            print(f"Scanning {len(recent_ids)} candidate email(s)...")
+            if config.DEBUG:
+                print(f"Scanning {len(recent_ids)} recent email(s)...")
 
             for mid_bytes in reversed(recent_ids):
                 mid = mid_bytes.decode()
                 
-                # Check DB cache first
+                # Check DB cache first (fast PostgreSQL index lookup)
                 if is_processed(mid):
                     continue
 
@@ -101,8 +97,17 @@ class GmailShippingMonitor:
                         )
                         processed_count += 1
                         # Mark as seen on server
-                        mail.store(mid, "+FLAGS", "\\Seen")
+                        try:
+                            mail.store(mid, "+FLAGS", "\\Seen")
+                        except Exception:
+                            pass
                 else:
+                    # Mark non-shipping email as checked so we don't re-download every cycle
+                    mark_processed(
+                        email_id=mid,
+                        subject=subject[:100],
+                        courier="SKIPPED"
+                    )
                     if config.DEBUG:
                         print(f"Skipping non-pickup email: {subject[:60]} (ID {mid})")
 

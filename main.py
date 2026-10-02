@@ -57,15 +57,13 @@ def main():
 
     if args.mode == "test-scan":
         print("🔍 Running test scan on recent emails (dry-run mode, will not mark as processed)...")
-        # Temporarily scan matching emails
-        monitor.check_inbox(search_unseen_only=False, max_scan=5)
+        monitor.check_inbox(max_scan=10)
         print("✅ Test scan finished.")
         return
 
     if args.mode == "once":
         print("📬 Checking inbox for new shipping notifications...")
-        unseen_only = not args.all_emails
-        count = monitor.check_inbox(search_unseen_only=unseen_only, max_scan=20)
+        count = monitor.check_inbox(max_scan=25)
         print(f"🏁 Finished check. Processed {count} shipment(s).")
         return
 
@@ -73,7 +71,7 @@ def main():
         print(f"🚀 Starting ShippingAssistant daemon (interval: {args.interval}s)...")
         try:
             while True:
-                monitor.check_inbox(search_unseen_only=True, max_scan=20)
+                monitor.check_inbox(max_scan=25)
                 time.sleep(args.interval)
         except KeyboardInterrupt:
             print("\n🛑 Stopped daemon.")

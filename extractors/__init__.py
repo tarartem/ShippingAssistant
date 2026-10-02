@@ -4,13 +4,15 @@ from .base import ShipmentInfo
 from .inpost import InPostExtractor
 from .seur import SeurExtractor
 from .vinted_go import VintedGoExtractor
+from .wallapop import WallapopExtractor
 from .generic import GenericExtractor
 import email.header
 
-# InPost and SEUR take priority because their notifications are often relayed via Vinted
+# InPost, SEUR, Wallapop take priority, then Vinted, then Generic fallback
 ALL_EXTRACTORS = [
     InPostExtractor,
     SeurExtractor,
+    WallapopExtractor,
     VintedGoExtractor,
     GenericExtractor
 ]
