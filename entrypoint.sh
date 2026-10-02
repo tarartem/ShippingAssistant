@@ -1,0 +1,41 @@
+#!/bin/sh
+set -e
+
+echo "=========================================================="
+echo "🚀 Starting ShippingAssistant 24/7 Cloud Container"
+echo "=========================================================="
+
+# Ensure data directory exists for persistence
+mkdir -p /app/data/auth_info
+
+# Link persistent auth_info if not already linked
+if [ ! -L /app/whatsapp_bridge/auth_info ]; then
+  # If local auth_info already has credentials, copy them to persistent data
+  if [ -d /app/whatsapp_bridge/auth_info ] && [ "$(ls -A /app/whatsapp_bridge/auth_info 2>/dev/null)" ]; then
+    cp -rn /app/whatsapp_bridge/auth_info/* /app/data/auth_info/ 2>/dev/null || true
+    rm -rf /app/whatsapp_bridge/auth_info
+  fi
+  ln -s /app/data/auth_info /app/whatsapp_bridge/auth_info
+fi
+
+# 1. Start WhatsApp Bridge in the background
+echo "📡 Launching WhatsApp Bridge..."
+cd /app/whatsapp_bridge
+node server.js &
+BRIDGE_PID=$!
+cd /app
+
+# Wait for bridge to initialize
+echo "⏳ Waiting for WhatsApp Bridge to come online..."
+sleep 5
+
+# 2. Start Python Shipping Monitor in background
+echo "📬 Launching Python Shipping Monitor..."
+python3 main.py --mode daemon --interval 300 &
+MONITOR_PID=$!
+
+# Trap signals for graceful shutdown
+trap "kill -TERM $BRIDGE_PID $MONITOR_PID; exit 0" SIGINT SIGTERM
+
+echo "✅ All services running 24/7."
+wait

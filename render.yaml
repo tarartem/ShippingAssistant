@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: shipping-assistant
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /status
+    envVars:
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: GMAIL_IMAP_SERVER
+        value: imap.gmail.com
+      - key: GMAIL_IMAP_PORT
+        value: "993"
+      - key: WHATSAPP_BRIDGE_URL
+        value: http://127.0.0.1:3000
+      - key: WHATSAPP_TARGET_GROUP
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CHECK_INTERVAL_SECONDS
+        value: "300"

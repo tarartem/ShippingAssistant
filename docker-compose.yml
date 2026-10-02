@@ -1,0 +1,13 @@
+services:
+  shipping-assistant:
+    build: .
+    container_name: shipping-assistant
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DB_PATH=/app/data/processed_emails.db
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "3000:3000"
