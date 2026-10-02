@@ -34,7 +34,7 @@ python3 main.py --mode daemon --interval 300 &
 MONITOR_PID=$!
 
 # Trap signals for graceful shutdown
-trap "kill -TERM $BRIDGE_PID $MONITOR_PID; exit 0" SIGINT SIGTERM
+trap "kill -TERM $BRIDGE_PID $MONITOR_PID 2>/dev/null || true; exit 0" INT TERM
 
 echo "✅ All services running 24/7."
 wait
