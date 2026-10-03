@@ -3,15 +3,17 @@ from bs4 import BeautifulSoup
 from .base import ShipmentInfo
 from .inpost import InPostExtractor
 from .seur import SeurExtractor
+from .gls import GLSExtractor
 from .vinted_go import VintedGoExtractor
 from .wallapop import WallapopExtractor
 from .generic import GenericExtractor
 import email.header
 
-# InPost, SEUR, Wallapop take priority, then Vinted, then Generic fallback
+# InPost, SEUR, GLS, Wallapop take priority, then Vinted, then Generic fallback
 ALL_EXTRACTORS = [
     InPostExtractor,
     SeurExtractor,
+    GLSExtractor,
     WallapopExtractor,
     VintedGoExtractor,
     GenericExtractor
