@@ -38,8 +38,8 @@ class WhatsAppBridgeNotifier(BaseNotifier):
             "message": message_text
         }
 
-        # If we have a QR code image URL, download it to ensure clean delivery
-        temp_img_file = None
+        # If we have a QR code image URL, pre-download and base64-encode it so it works
+        # seamlessly whether the bridge is running locally or remotely on Render
         if info.qr_code_url:
             try:
                 img_res = requests.get(
@@ -48,10 +48,10 @@ class WhatsAppBridgeNotifier(BaseNotifier):
                     timeout=10
                 )
                 if img_res.status_code == 200 and len(img_res.content) > 100:
-                    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
-                        f.write(img_res.content)
-                        temp_img_file = f.name
-                    payload["imagePath"] = temp_img_file
+                    import base64
+                    payload["imageBase64"] = base64.b64encode(img_res.content).decode('ascii')
+                else:
+                    payload["imageUrl"] = info.qr_code_url
             except Exception as e:
                 print(f"Warning: Failed to pre-download QR image, using URL fallback: {e}")
                 payload["imageUrl"] = info.qr_code_url
@@ -68,10 +68,4 @@ class WhatsAppBridgeNotifier(BaseNotifier):
             except Exception as e:
                 print(f"⚠️ Attempt {attempt}: Error connecting to bridge: {e}. Retrying in 3s...")
                 time.sleep(3)
-            finally:
-                if temp_img_file and os.path.exists(temp_img_file):
-                    try:
-                        os.remove(temp_img_file)
-                    except Exception:
-                        pass
         return False

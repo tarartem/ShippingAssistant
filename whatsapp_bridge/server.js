@@ -214,7 +214,7 @@ app.post('/send', async (req, res) => {
     return res.status(503).json({ error: 'WhatsApp is not connected yet.' });
   }
 
-  const { target, message, imageUrl, imagePath } = req.body;
+  const { target, message, imageUrl, imagePath, imageBase64 } = req.body;
   if (!target) {
     return res.status(400).json({ error: 'Target JID (phone@s.whatsapp.net or group@g.us) is required.' });
   }
@@ -226,7 +226,13 @@ app.post('/send', async (req, res) => {
     }
 
     let result;
-    if (imagePath && fs.existsSync(imagePath)) {
+    if (imageBase64) {
+      const buffer = Buffer.from(imageBase64, 'base64');
+      result = await sock.sendMessage(sendTarget, {
+        image: buffer,
+        caption: message || ''
+      });
+    } else if (imagePath && fs.existsSync(imagePath)) {
       const buffer = fs.readFileSync(imagePath);
       result = await sock.sendMessage(sendTarget, {
         image: buffer,
