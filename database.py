@@ -23,10 +23,15 @@ def _get_pg_conn():
         ssl_context=ssl_context
     )
 
+def _escape_sql(val: Optional[str]) -> str:
+    if val is None:
+        return "NULL"
+    return "'" + str(val).replace("'", "''") + "'"
+
 def init_db():
     if DATABASE_URL:
         conn = _get_pg_conn()
-        conn.run("""
+        conn.execute_simple("""
             CREATE TABLE IF NOT EXISTS processed_shipments (
                 id SERIAL PRIMARY KEY,
                 email_id VARCHAR(255) UNIQUE,
@@ -56,9 +61,10 @@ def init_db():
 def is_processed(email_id: str) -> bool:
     if DATABASE_URL:
         conn = _get_pg_conn()
-        res = conn.run("SELECT 1 FROM processed_shipments WHERE email_id = :eid", eid=str(email_id))
+        sql = f"SELECT 1 FROM processed_shipments WHERE email_id = {_escape_sql(str(email_id))}"
+        ctx = conn.execute_simple(sql)
         conn.close()
-        return len(res) > 0
+        return len(ctx.rows) > 0 if ctx.rows else False
     else:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
@@ -74,12 +80,20 @@ def mark_processed(
 ):
     if DATABASE_URL:
         conn = _get_pg_conn()
-        conn.run("""
+        sql = f"""
             INSERT INTO processed_shipments 
             (email_id, subject, courier, tracking_number, pickup_code, processed_at)
-            VALUES (:eid, :subj, :cour, :track, :pin, NOW())
+            VALUES (
+                {_escape_sql(str(email_id))},
+                {_escape_sql(subject)},
+                {_escape_sql(courier)},
+                {_escape_sql(tracking_number)},
+                {_escape_sql(pickup_code)},
+                NOW()
+            )
             ON CONFLICT (email_id) DO NOTHING
-        """, eid=str(email_id), subj=subject, cour=courier, track=tracking_number, pin=pickup_code)
+        """
+        conn.execute_simple(sql)
         conn.close()
     else:
         with sqlite3.connect(DB_PATH) as conn:
